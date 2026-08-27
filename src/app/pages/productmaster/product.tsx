@@ -117,6 +117,7 @@ export default function ProductList() {
         brandId: item.brand?.id || item.brandId,
         mrp: Number(item.mrp) || 0,
         sellingPrice: Number(item.sellingPrice) || 0,
+        finalPrice: Number(item.finalPrice) || 0,
         stockQuantity: Number(item.stockQuantity) || 0,
         status: item.status || "ACTIVE",
         verificationStatus: item.verificationStatus || "PENDING",
@@ -536,7 +537,7 @@ export default function ProductList() {
                     <Td className="py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-gray-900 dark:text-gray-200">
-                          {formatPrice(item.sellingPrice)}
+                          {formatPrice(item.finalPrice)}
                         </span>
                         {item.mrp > item.sellingPrice && (
                           <span className="text-xs text-gray-400 line-through">

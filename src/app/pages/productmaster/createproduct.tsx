@@ -57,6 +57,7 @@ type FormValues = {
   mrp: number | string;
   sellingPrice: number | string;
   tax: number | string;
+  discount: number | string;
   stockQuantity: number | string;
   barcode: string;
   unit: string;
@@ -166,12 +167,20 @@ export default function CreateProduct() {
   const navigate = useNavigate();
   // dropdown data
   const [categories, setCategories] = useState<OptionType[]>([]);
-const [subCategories, setSubCategories] = useState<(OptionType & { categoryId: number })[]>([]);
-const [subSubCategories, setSubSubCategories] = useState<(OptionType & { subCategoryId: number })[]>([]);
-const [brands, setBrands] = useState<OptionType[]>([]);
+  const [subCategories, setSubCategories] = useState<
+    (OptionType & { categoryId: number })[]
+  >([]);
+  const [subSubCategories, setSubSubCategories] = useState<
+    (OptionType & { subCategoryId: number })[]
+  >([]);
+  const [brands, setBrands] = useState<OptionType[]>([]);
 
-const [filteredSubCategories, setFilteredSubCategories] = useState<OptionType[]>([]);
-const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionType[]>([]);
+  const [filteredSubCategories, setFilteredSubCategories] = useState<
+    OptionType[]
+  >([]);
+  const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<
+    OptionType[]
+  >([]);
   const {
     register,
     handleSubmit,
@@ -205,6 +214,7 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
       mrp: "",
       sellingPrice: "",
       tax: 0,
+      discount: 0,
       stockQuantity: "",
       barcode: "",
       unit: "",
@@ -317,6 +327,7 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
   const subCategoryId = useWatch({ control, name: "subCategoryId" });
   const sellingPrice = useWatch({ control, name: "sellingPrice" });
   const tax = useWatch({ control, name: "tax" });
+  const discount = useWatch({ control, name: "discount" });
   const mainImage = useWatch({ control, name: "mainImage" });
   const thumbnailImage = useWatch({ control, name: "thumbnailImage" });
   const additionalImages = useWatch({ control, name: "additionalImages" });
@@ -327,17 +338,14 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
     try {
       setLoadingProduct(true);
       const res = await apiHelper.get(`/vendor-panel/product/${id}`);
-    const p = res?.data?.product || res?.product || res?.data || res;
+      const p = res?.data?.product || res?.product || res?.data || res;
 
       setValue("productName", p.productName || p.name || "");
       setValue("sku", p.sku || "");
       setValue("partNumber", p.partNumber || "");
       setValue("oemNumber", p.oemNumber || "");
       setValue("countryOfOrigin", p.countryOfOrigin || "");
-      setValue(
-        "categoryId",
-        String(p.category?.id || p.categoryId || ""),
-      );
+      setValue("categoryId", String(p.category?.id || p.categoryId || ""));
       setValue(
         "subCategoryId",
         String(p.subCategory?.id || p.subCategoryId || ""),
@@ -365,7 +373,8 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
 
       setValue("mrp", p.mrp ?? "");
       setValue("sellingPrice", p.sellingPrice ?? "");
-      setValue("tax", p.tax ?? 0);
+      setValue("tax", Number(p.tax) || 0);
+      setValue("discount", Number(p.discount) || 0);
       setValue("stockQuantity", p.stockQuantity ?? "");
       setValue("barcode", p.barcode || "");
       setValue("unit", p.unit || "");
@@ -373,10 +382,7 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
       setValue("maxOrderQuantity", p.maxOrderQuantity ?? 1);
 
       setValue("mainImage", apiHelper.getImageUrl(p.mainImage) || "");
-      setValue(
-        "thumbnailImage",
-        apiHelper.getImageUrl(p.thumbnailImage) || "",
-      );
+      setValue("thumbnailImage", apiHelper.getImageUrl(p.thumbnailImage) || "");
       setValue(
         "additionalImages",
         (p.additionalImages || []).map((img: string) =>
@@ -499,9 +505,15 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
   // ---- final price auto-calc ----
   const numericSelling = Number(sellingPrice) || 0;
   const numericTax = Number(tax) || 0;
+  const numericDiscount = Number(discount) || 0;
+
+  // Step 1: Add tax
+  const taxIncludedPrice = numericSelling + (numericSelling * numericTax) / 100;
+
+  // Step 2: Apply discount after tax
   const finalPrice = (
-    numericSelling +
-    (numericSelling * numericTax) / 100
+    taxIncludedPrice -
+    (taxIncludedPrice * numericDiscount) / 100
   ).toFixed(2);
 
   // ---- image handlers ----
@@ -611,6 +623,7 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
       formData.append("mrp", String(data.mrp));
       formData.append("sellingPrice", String(data.sellingPrice));
       formData.append("tax", String(data.tax));
+      formData.append("discount", String(data.discount));
       formData.append("finalPrice", String(finalPrice));
       formData.append("stockQuantity", String(data.stockQuantity));
       formData.append("barcode", data.barcode);
@@ -663,10 +676,7 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
       formData.append("manufacturingDate", data.manufacturingDate);
       formData.append("expiryDate", data.expiryDate);
       formData.append("returnPolicy", data.returnPolicy);
-      formData.append(
-        "estimatedDeliveryTime",
-        data.estimatedDeliveryTime,
-      );
+      formData.append("estimatedDeliveryTime", data.estimatedDeliveryTime);
       formData.append("freeShipping", String(data.freeShipping));
       formData.append("warrantyPeriod", data.warrantyPeriod);
       formData.append("warrantyDetails", data.warrantyDetails);
@@ -1152,10 +1162,32 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
                     )}
                   />
                 </div>
-
                 <div>
                   <label className="mb-1.5 block text-sm font-medium">
-                    Final Price (Tax Included)
+                    Discount (%)
+                  </label>
+
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    {...register("discount", {
+                      min: {
+                        value: 0,
+                        message: "Discount cannot be negative",
+                      },
+                      max: {
+                        value: 100,
+                        message: "Discount cannot exceed 100%",
+                      },
+                    })}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium">
+                    Final Price (Tax Included & Discounted)
                   </label>
                   <div className="rounded-lg border border-green-300 bg-green-50 px-3.5 py-2.5 text-sm font-semibold text-green-700 dark:border-green-800 dark:bg-green-950/30 dark:text-green-400">
                     {finalPrice}
@@ -1495,9 +1527,8 @@ const [filteredSubSubCategories, setFilteredSubSubCategories] = useState<OptionT
                     <Listbox
                       data={returnPolicyOptions}
                       value={
-                        returnPolicyOptions.find(
-                          (o) => o.id === field.value,
-                        ) || null
+                        returnPolicyOptions.find((o) => o.id === field.value) ||
+                        null
                       }
                       displayField="name"
                       placeholder="Select Return Policy"
