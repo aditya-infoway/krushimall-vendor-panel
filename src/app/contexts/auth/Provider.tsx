@@ -6,7 +6,7 @@ import axios from "@/utils/axios";
 import { isTokenValid, setSession, storage } from "@/utils/jwt";
 import { AuthProvider as AuthContext, AuthContextType } from "./context";
 import { User } from "@/@types/user";
-
+import { toast } from "sonner";
 // ----------------------------------------------------------------------
 
 interface AuthAction {
@@ -133,13 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       return true;
-    } catch (err: any) {
+       } catch (err: any) {
       const msg =
         err?.response?.data?.message || err?.message || JSON.stringify(err);
       dispatch({
         type: "LOGIN_ERROR",
         payload: { errorMessage: msg },
       });
+      toast.error(msg);
       return false;
     }
   };

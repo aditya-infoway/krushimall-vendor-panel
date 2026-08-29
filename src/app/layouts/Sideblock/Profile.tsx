@@ -74,27 +74,26 @@ const links: LinkItem[] = [
 
 export function Profile() {
   const { logout } = useAuthContext();
-  const [company, setCompany] = useState<any>(null);
+  const [vendorInfo, setVendorInfo] = useState<any>(null);
 
   useEffect(() => {
-    fetchCompany();
+    fetchVendorInfo();
   }, []);
 
-  const fetchCompany = async () => {
+  const fetchVendorInfo = async () => {
     try {
-      const response = await apiHelper.get("/company");
-      // Handle different response structures
-      const companyData =
-        response?.data?.data?.[0] || response?.data?.[0] || response;
-      setCompany(companyData);
+      const res = await apiHelper.get("/vendor/me");
+      if (res.success) {
+        setVendorInfo(res.vendor);
+      }
     } catch (error) {
-      console.error("Failed to fetch company:", error);
+      console.error("Failed to fetch vendor info:", error);
     }
   };
 
-  const getCompanyLogo = () => {
-    if (!company?.logo) return "/images/avatar/avatar-12.jpg";
-    return apiHelper.getImageUrl(company.logo);
+  const getVendorAvatar = () => {
+    if (!vendorInfo?.avatar) return "/images/avatar/avatar-12.jpg";
+    return apiHelper.getImageUrl(vendorInfo.avatar);
   };
 
   return (
@@ -103,7 +102,7 @@ export function Profile() {
         as={Avatar}
         size={9}
         role="button"
-        src={getCompanyLogo()}
+        src={getVendorAvatar()}
         indicator={
           <AvatarDot
             color="success"
@@ -127,18 +126,18 @@ export function Profile() {
           {({ close }: { close: () => void }) => (
             <>
               <div className="dark:bg-dark-800 flex items-center gap-4 rounded-t-lg bg-gray-100 px-4 py-5">
-                <Avatar size={14} src={getCompanyLogo()} />
+                <Avatar size={14} src={getVendorAvatar()} />
                 <div>
                   <Link
                     className="hover:text-primary-600 focus:text-primary-600 dark:text-dark-100 dark:hover:text-primary-400"
                     to="/settings/general"
                   >
-                    {company?.companyName || "Company Name"}
+                    {vendorInfo?.name || "Vendor Name"}
                   </Link>
 
-                  {/* <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-400">
-                    Product Designer
-                  </p> */}
+                  <p className="dark:text-dark-300 mt-0.5 text-xs text-gray-400">
+                    {vendorInfo?.email || ""}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-col pt-2 pb-5">
