@@ -2,7 +2,7 @@
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 
 // Local Imports
 import Logo from "@/assets/appLogo.svg?react";
@@ -15,7 +15,8 @@ import { Page } from "@/components/shared/Page";
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { login, errorMessage } = useAuthContext();
+  const { login, errorMessage, isAuthenticated, isInitialized } =
+    useAuthContext();
 
   const {
     register,
@@ -29,27 +30,31 @@ export default function SignIn() {
     },
   });
 
-const onSubmit = async (data: AuthFormValues) => {
- const success = await login({
-  email: data.email,
-  password: data.password,
-});
+  // Jab tak AuthProvider ka init() (token validate karne wala) complete
+  // nahi hota, tab tak kuch render mat karo — nahi to login form
+  // ek pal ke liye flash hoga, chahe user already logged-in ho.
+  if (!isInitialized) {
+    return null; // yahan chaho to apna loader/spinner laga sakte ho
+  }
 
-if (success) {
- 
+  // Agar valid token already localStorage me hai (isAuthenticated true),
+  // to login page dikhane ki zarurat nahi — seedha redirect.
+  if (isAuthenticated) {
+    return <Navigate to="/select-company" replace />;
+  }
 
-  navigate("/select-company", {
-    replace: true,
-  });
+  const onSubmit = async (data: AuthFormValues) => {
+    const success = await login({
+      email: data.email,
+      password: data.password,
+    });
 
-  // setTimeout(() => {
-  //   console.log(
-  //     "AFTER NAVIGATE:",
-  //     window.location.pathname,
-  //   );
-  // }, 500);
-}
-};
+    if (success) {
+      navigate("/select-company", {
+        replace: true,
+      });
+    }
+  };
 
   return (
     <Page title="Vendor Login">
