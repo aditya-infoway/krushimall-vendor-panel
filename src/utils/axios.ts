@@ -8,7 +8,6 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
-    alert("Axios error: " + JSON.stringify(error.response?.data) + " status: " + error.response?.status)
     return Promise.reject(error.response?.data || "Something went wrong")
   }
 );

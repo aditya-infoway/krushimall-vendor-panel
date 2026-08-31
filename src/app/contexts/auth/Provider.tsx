@@ -3,10 +3,10 @@ import { useEffect, useReducer, ReactNode } from "react";
 
 // Local Imports
 import axios from "@/utils/axios";
-import { isTokenValid, setSession, storage } from "@/utils/jwt";
+import { isTokenValid, storage } from "@/utils/jwt";
 import { AuthProvider as AuthContext, AuthContextType } from "./context";
 import { User } from "@/@types/user";
-
+import { toast } from "sonner";
 // ----------------------------------------------------------------------
 
 interface AuthAction {
@@ -65,6 +65,9 @@ const reducerHandlers: Record<
   }),
 };
 
+
+
+
 const reducer = (
   state: AuthContextType,
   action: AuthAction,
@@ -82,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const authToken = storage.getItem("authToken");
 
         if (authToken && isTokenValid(authToken)) {
-          setSession(authToken);
+          axios.defaults.headers.common.Authorization = `Bearer ${authToken}`;
 
           const response = await axios.get<{ vendor: User }>(
             "/vendor/me", // pehle "/vendor/profile" tha
@@ -94,6 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             payload: { isAuthenticated: true, user: vendor },
           });
         } else {
+          storage.removeItem("authToken");
+          delete axios.defaults.headers.common.Authorization;
+
           dispatch({
             type: "INITIALIZE",
             payload: { isAuthenticated: false, user: null },
@@ -101,6 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (err) {
         console.error(err);
+        storage.removeItem("authToken");
+        delete axios.defaults.headers.common.Authorization;
+
         dispatch({
           type: "INITIALIZE",
           payload: { isAuthenticated: false, user: null },
@@ -121,11 +130,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await axios.post<{
         token: string;
         vendor: User;
-      }>("/vendor/login", credentials);
+      }>("/vendor/panel-login", credentials); // Vendor Panel = Spare Parts vendors only
 
       const { token, vendor } = response.data;
 
-      setSession(token);
+      storage.removeItem("authToken");
+      storage.setItem("authToken", token);
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
 
       dispatch({
         type: "LOGIN_SUCCESS",
@@ -140,12 +151,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         type: "LOGIN_ERROR",
         payload: { errorMessage: msg },
       });
+      toast.error(msg);
       return false;
     }
   };
 
   const logout = async () => {
-    setSession(null);
+    storage.removeItem("authToken");
+    delete axios.defaults.headers.common.Authorization;
     dispatch({ type: "LOGOUT" });
   };
 

@@ -7,15 +7,18 @@ import { useAuthContext } from "@/app/contexts/auth/context";
 
 // ----------------------------------------------------------------------
 
-
 export default function GhostGuard() {
   const outlet = useOutlet();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isInitialized } = useAuthContext();
 
- 
+  // Jab tak AuthProvider apna token-check (init) complete nahi kar leta,
+  // tab tak login form render hi mat karo — warna ek pal ke liye
+  // form flash hoga chahe user already authenticated ho.
+  if (!isInitialized) {
+    return null; // yahan chaho to apna loader/spinner laga sakte ho
+  }
 
   if (isAuthenticated) {
-  
     return <Navigate to="/select-company" replace />;
   }
 

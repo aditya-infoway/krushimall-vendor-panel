@@ -204,6 +204,17 @@ const protectedRoutes: RouteObject = {
             },
           ],
         },
+          {
+          path: "coupan",
+          children: [
+            {
+              path: "coupan",
+              lazy: async () => ({
+                Component: (await import("@/app/pages/coupon/coupan")).default,
+              }),
+            },
+          ],
+        },
         {
           path: "settings",
           lazy: async () => ({

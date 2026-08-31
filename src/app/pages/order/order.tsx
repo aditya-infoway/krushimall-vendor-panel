@@ -13,8 +13,8 @@ import {
   Search,
   Pencil,
   X,
-   Eye,          
-  ImageIcon,
+  Eye,
+  // ImageIcon,
   User,
   Phone,
   Mail,
@@ -149,11 +149,10 @@ const Order = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [drawerStatus, setDrawerStatus] = useState("");
-// ---------- Cancel details modal + image drawer state ----------
-const [cancelModalOpen, setCancelModalOpen] = useState(false);
-const [cancelOrderData, setCancelOrderData] = useState<any | null>(null);
-const [imageDrawerOpen, setImageDrawerOpen] = useState(false);
-const [imageDrawerImages, setImageDrawerImages] = useState<string[]>([]);
+  // ---------- Cancel details modal + image drawer state ----------
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelOrderData, setCancelOrderData] = useState<any | null>(null);
+
   const entriesOptions = [
     { id: 10, name: "10" },
     { id: 20, name: "20" },
@@ -169,25 +168,16 @@ const [imageDrawerImages, setImageDrawerImages] = useState<string[]>([]);
   // ================================
   // FETCH ORDERS
   // ================================
-const handleViewCancelDetails = (order: any) => {
-  setCancelOrderData(order);
-  setCancelModalOpen(true);
-};
+  const handleViewCancelDetails = (order: any) => {
+    setCancelOrderData(order);
+    setCancelModalOpen(true);
+  };
 
-const closeCancelModal = () => {
-  setCancelModalOpen(false);
-  setCancelOrderData(null);
-};
+  const closeCancelModal = () => {
+    setCancelModalOpen(false);
+    setCancelOrderData(null);
+  };
 
-const openImageDrawer = (images: string[]) => {
-  setImageDrawerImages(images || []);
-  setImageDrawerOpen(true);
-};
-
-const closeImageDrawer = () => {
-  setImageDrawerOpen(false);
-  setImageDrawerImages([]);
-};
   const fetchOrders = async () => {
     try {
       setLoading(true);
@@ -263,12 +253,19 @@ const closeImageDrawer = () => {
         },
       );
 
-      if (data.success) {
+           if (data.success) {
         toast.success("Order status updated");
         setOrders((prev) =>
           prev.map((order) =>
             order.orderNumber === orderNumber
-              ? { ...order, orderStatus: newStatus }
+              ? {
+                  ...order,
+                  orderStatus: newStatus,
+                  paymentStatus:
+                    newStatus === "DELIVERED" && order.paymentMethod === "COD"
+                      ? "PAID"
+                      : order.paymentStatus,
+                }
               : order,
           ),
         );
@@ -485,28 +482,28 @@ const closeImageDrawer = () => {
                   </Td>
 
                   {/* EDIT ICON — opens drawer */}
-               {/* EDIT / VIEW ICON — status ke hisaab se */}
-<Td className="py-4 text-center">
-  {order.orderStatus === "CANCELLED" ? (
-    <button
-      type="button"
-      onClick={() => handleViewCancelDetails(order)}
-      className="dark:hover:bg-dark-600 dark:text-dark-200 inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
-      title="View cancellation details"
-    >
-      <Eye className="h-4 w-4" />
-    </button>
-  ) : (
-    <button
-      type="button"
-      onClick={() => handleEditOrder(order)}
-      className="dark:hover:bg-dark-600 dark:text-dark-200 inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
-      title="Edit order"
-    >
-      <Pencil className="h-4 w-4" />
-    </button>
-  )}
-</Td>
+                  {/* EDIT / VIEW ICON — status ke hisaab se */}
+                  <Td className="py-4 text-center">
+                    {order.orderStatus === "CANCELLED" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleViewCancelDetails(order)}
+                        className="dark:hover:bg-dark-600 dark:text-dark-200 inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
+                        title="View cancellation details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleEditOrder(order)}
+                        className="dark:hover:bg-dark-600 dark:text-dark-200 inline-flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100"
+                        title="Edit order"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    )}
+                  </Td>
                 </Tr>
               ))}
 
@@ -693,7 +690,7 @@ const closeImageDrawer = () => {
           {/* Drawer panel */}
           <div className="fixed inset-0 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
-              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full ">
                 <Transition.Child
                   as={Fragment}
                   enter="transform transition ease-in-out duration-300"
@@ -816,8 +813,7 @@ const closeImageDrawer = () => {
                                       {[
                                         selectedOrder.address,
                                         selectedOrder.landmark,
-                                        selectedOrder.city,
-                                        selectedOrder.state,
+                                       
                                         selectedOrder.pincode,
                                       ]
                                         .filter(Boolean)
@@ -940,7 +936,8 @@ const closeImageDrawer = () => {
                                         : ""}
                                     </span>
                                     <span className="font-medium text-green-600 dark:text-green-400">
-                                      - {formatAmount(
+                                      -{" "}
+                                      {formatAmount(
                                         selectedOrder.discountAmount,
                                       )}
                                     </span>
@@ -1017,193 +1014,148 @@ const closeImageDrawer = () => {
       {/* =====================================
     CANCEL DETAILS MODAL (per-item)
 ====================================== */}
-<Transition show={cancelModalOpen} as={Fragment}>
-  <Dialog onClose={closeCancelModal} className="relative z-300">
-    <Transition.Child
-      as={Fragment}
-      enter="ease-out duration-200"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-150"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
-    </Transition.Child>
+      {/* =====================================
+          CANCEL DETAILS DRAWER (right side, per-item)
+      ====================================== */}
+      <Transition show={cancelModalOpen} as={Fragment}>
+        <Dialog onClose={closeCancelModal} className="relative z-300">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
+          </Transition.Child>
 
-    <div className="fixed inset-0 flex items-center justify-center p-4">
-      <Transition.Child
-        as={Fragment}
-        enter="ease-out duration-200"
-        enterFrom="opacity-0 scale-95"
-        enterTo="opacity-100 scale-100"
-        leave="ease-in duration-150"
-        leaveFrom="opacity-100 scale-100"
-        leaveTo="opacity-0 scale-95"
-      >
-        <Dialog.Panel className="dark:bg-dark-800 w-full max-w-lg rounded-2xl bg-white shadow-xl">
-          <div className="dark:border-dark-700 flex items-center justify-between border-b border-gray-200 px-5 py-4">
-            <div>
-              <Dialog.Title className="text-base font-semibold text-gray-900 dark:text-white">
-                Cancellation Details
-              </Dialog.Title>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                {cancelOrderData?.orderNumber}
-              </p>
-            </div>
-            <button
-              onClick={closeCancelModal}
-              className="dark:hover:bg-dark-700 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-5">
-            {Array.isArray(cancelOrderData?.items) &&
-            cancelOrderData.items.some(
-              (i: any) => i.itemStatus === "CANCELLED",
-            ) ? (
-              cancelOrderData.items
-                .filter((i: any) => i.itemStatus === "CANCELLED")
-                .map((item: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="dark:bg-dark-700/40 dark:border-dark-600 space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4"
-                  >
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      {item.productName}
-                    </p>
-
-                    <div className="flex items-start gap-2">
-                      <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                        Reason
-                      </span>
-                      <span className="text-sm text-gray-800 dark:text-gray-200">
-                        {item.cancelReason || "-"}
-                      </span>
-                    </div>
-
-                    {item.cancelDescription && (
-                      <div className="flex items-start gap-2">
-                        <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                          Description
-                        </span>
-                        <span className="text-sm text-gray-800 dark:text-gray-200">
-                          {item.cancelDescription}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-start gap-2">
-                      <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                        Requested On
-                      </span>
-                      <span className="text-sm text-gray-800 dark:text-gray-200">
-                        {formatDateTime(item.cancelRequestedAt)}
-                      </span>
-                    </div>
-
-                    {Array.isArray(item.cancelImages) &&
-                      item.cancelImages.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => openImageDrawer(item.cancelImages)}
-                          className="text-primary-600 dark:text-primary-400 mt-1 inline-flex items-center gap-1.5 text-xs font-semibold hover:underline"
-                        >
-                          <ImageIcon className="h-3.5 w-3.5" />
-                          View {item.cancelImages.length} Photo
-                          {item.cancelImages.length > 1 ? "s" : ""}
-                        </button>
-                      )}
-                  </div>
-                ))
-            ) : (
-              <p className="py-8 text-center text-sm text-gray-400">
-                No cancellation details available
-              </p>
-            )}
-          </div>
-
-          <div className="dark:border-dark-700 border-t border-gray-200 px-5 py-4">
-            <button
-              onClick={closeCancelModal}
-              className="dark:border-dark-600 dark:hover:bg-dark-700 w-full rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-300"
-            >
-              Close
-            </button>
-          </div>
-        </Dialog.Panel>
-      </Transition.Child>
-    </div>
-  </Dialog>
-</Transition>
-
-{/* =====================================
-    IMAGE DRAWER — right side, cancel photos
-====================================== */}
-<Transition show={imageDrawerOpen} as={Fragment}>
-  <Dialog onClose={closeImageDrawer} className="relative z-400">
-    <Transition.Child
-      as={Fragment}
-      enter="ease-out duration-200"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-150"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
-    </Transition.Child>
-
-    <div className="fixed inset-0 overflow-hidden">
-      <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-        <Transition.Child
-          as={Fragment}
-          enter="transform transition ease-in-out duration-300"
-          enterFrom="translate-x-full"
-          enterTo="translate-x-0"
-          leave="transform transition ease-in-out duration-200"
-          leaveFrom="translate-x-0"
-          leaveTo="translate-x-full"
-        >
-          <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-            <div className="dark:bg-dark-800 flex h-full flex-col bg-white shadow-xl">
-              <div className="dark:border-dark-700 flex items-center justify-between border-b border-gray-200 px-5 py-4">
-                <Dialog.Title className="text-base font-semibold text-gray-900 dark:text-white">
-                  Cancellation Photos
-                </Dialog.Title>
-                <button
-                  onClick={closeImageDrawer}
-                  className="dark:hover:bg-dark-700 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          <div className="fixed inset-0 overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full ">
+                <Transition.Child
+                  as={Fragment}
+                  enter="transform transition ease-in-out duration-300"
+                  enterFrom="translate-x-full"
+                  enterTo="translate-x-0"
+                  leave="transform transition ease-in-out duration-200"
+                  leaveFrom="translate-x-0"
+                  leaveTo="translate-x-full"
                 >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+                  <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                    <div className="dark:bg-dark-800 flex h-full flex-col bg-white shadow-xl">
+                      {/* Header */}
+                      <div className="dark:border-dark-700 flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                        <div>
+                          <Dialog.Title className="text-base font-semibold text-gray-900 dark:text-white">
+                            Cancellation Details
+                          </Dialog.Title>
+                          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                            {cancelOrderData?.orderNumber}
+                          </p>
+                        </div>
+                        <button
+                          onClick={closeCancelModal}
+                          className="dark:hover:bg-dark-700 rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
 
-              <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
-                {imageDrawerImages.length > 0 ? (
-                  imageDrawerImages.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={apiHelper.getImageUrl(img)}
-                      alt={`Cancel photo ${idx + 1}`}
-                      className="dark:border-dark-600 w-full rounded-xl border border-gray-200 object-cover"
-                    />
-                  ))
-                ) : (
-                  <p className="py-8 text-center text-sm text-gray-400">
-                    No photos uploaded
-                  </p>
-                )}
+                      {/* Body — scrollable */}
+                      <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+                        {Array.isArray(cancelOrderData?.items) &&
+                        cancelOrderData.items.some(
+                          (i: any) => i.itemStatus === "CANCELLED",
+                        ) ? (
+                          cancelOrderData.items
+                            .filter((i: any) => i.itemStatus === "CANCELLED")
+                            .map((item: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="dark:bg-dark-700/40 dark:border-dark-600 space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4"
+                              >
+                                <p className="text-sm font-semibold text-gray-900 dark:text-gray-200">
+                                  {item.productName}
+                                </p>
+
+                                <div className="flex items-start gap-2">
+                                  <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                                    Reason
+                                  </span>
+                                  <span className="text-sm text-gray-800 dark:text-gray-200">
+                                    {item.cancelReason || "-"}
+                                  </span>
+                                </div>
+
+                                {item.cancelDescription && (
+                                  <div className="flex items-start gap-2">
+                                    <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                                      Description
+                                    </span>
+                                    <span className="text-sm text-gray-800 dark:text-gray-200">
+                                      {item.cancelDescription}
+                                    </span>
+                                  </div>
+                                )}
+
+                                <div className="flex items-start gap-2">
+                                  <span className="w-24 shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                                    Requested On
+                                  </span>
+                                  <span className="text-sm text-gray-800 dark:text-gray-200">
+                                    {formatDateTime(item.cancelRequestedAt)}
+                                  </span>
+                                </div>
+
+                                {/* Images shown inline — no separate drawer */}
+                                {Array.isArray(item.cancelImages) &&
+                                  item.cancelImages.length > 0 && (
+                                    <div className="pt-1">
+                                      <span className="mb-2 block text-xs text-gray-500 dark:text-gray-400">
+                                        Photos ({item.cancelImages.length})
+                                      </span>
+                                      <div className="grid grid-cols-3 gap-2">
+                                        {item.cancelImages.map(
+                                          (img: string, imgIdx: number) => (
+                                            <img
+                                              key={imgIdx}
+                                              src={apiHelper.getImageUrl(img)}
+                                              alt={`Cancel photo ${imgIdx + 1}`}
+                                              className="dark:border-dark-600 h-20 w-full rounded-lg border border-gray-200 object-cover"
+                                            />
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
+                            ))
+                        ) : (
+                          <p className="py-8 text-center text-sm text-gray-400">
+                            No cancellation details available
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Footer */}
+                      <div className="dark:border-dark-700 border-t border-gray-200 px-5 py-4">
+                        <button
+                          onClick={closeCancelModal}
+                          className="dark:border-dark-600 dark:hover:bg-dark-700 w-full rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-300"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </Dialog.Panel>
+                </Transition.Child>
               </div>
             </div>
-          </Dialog.Panel>
-        </Transition.Child>
-      </div>
-    </div>
-  </Dialog>
-</Transition>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 };

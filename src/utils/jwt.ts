@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { jwtDecode } from "jwt-decode";
 import axiosInstance from "@/utils/axios";
 
-const storage = Capacitor.isNativePlatform() ? localStorage : sessionStorage;
+const storage = Capacitor.isNativePlatform() ? localStorage : localStorage;
 
 const LOGIN_PATH = "/login"; // apne actual vendor panel route se replace kar de
 
