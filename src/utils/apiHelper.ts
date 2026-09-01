@@ -53,7 +53,7 @@ const Logout = () => {
 
   window.dispatchEvent(new Event("force-logout"));
 
-  window.location.href = "/krushimall-admin/login";
+  window.location.href = "/krushimall-vendor/login";
 };
 
 // Base URL without /api
