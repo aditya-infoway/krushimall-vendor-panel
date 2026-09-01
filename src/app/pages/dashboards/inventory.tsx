@@ -2,18 +2,18 @@ import React from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
-  RadialBarChart,
-  RadialBar,
-  LineChart,
-  BarChart,
-  Bar,
-  Line,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
+  // RadialBarChart,
+  // RadialBar,
+  // LineChart,
+  // BarChart,
+  // Bar,
+  // Line,
+  // AreaChart,
+  // Area,
+  // XAxis,
+  // YAxis,
   Tooltip,
-  CartesianGrid,
+  // CartesianGrid,
   PieChart,
   Pie,
   Cell,
@@ -344,9 +344,9 @@ const PIE_COLORS = ["#22c55e", "#3b82f6", "#8b5cf6"]; // Present, Transit, Booke
             {/* Refresh Button */}
            <button
   onClick={() => {
-    fetchLeadSummary();
-    fetchInventoryAnalysis();
-    fetchInventoryDetails();
+    // fetchLeadSummary();
+    // fetchInventoryAnalysis();
+    // fetchInventoryDetails();
   }}
   className="dark:border-dark-600 dark:bg-dark-700 dark:hover:bg-dark-600 flex cursor-pointer items-center justify-center rounded-lg border border-gray-300 bg-white p-1.5 text-gray-600 hover:bg-gray-50 sm:p-2 dark:text-gray-300"
 >

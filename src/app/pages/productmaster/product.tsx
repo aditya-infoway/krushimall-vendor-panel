@@ -45,6 +45,7 @@ type ProductType = {
   brandId?: number;
   mrp: number;
   sellingPrice: number;
+  finalPrice:number;
   stockQuantity: number;
   status: string;
   verificationStatus: string;

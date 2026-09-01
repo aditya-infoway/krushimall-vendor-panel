@@ -28,7 +28,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: "/krushimall-admin",
+    basename: "/krushimall-vendor",
   }
 );
 
