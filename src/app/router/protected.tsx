@@ -202,6 +202,7 @@ const protectedRoutes: RouteObject = {
                 Component: (await import("@/app/pages/order/order")).default,
               }),
             },
+            
           ],
         },
           {
@@ -211,6 +212,18 @@ const protectedRoutes: RouteObject = {
               path: "coupan",
               lazy: async () => ({
                 Component: (await import("@/app/pages/coupon/coupan")).default,
+              }),
+            },
+             {
+              path: "add",
+              lazy: async () => ({
+                Component: (await import("@/app/pages/coupon/addcoupan")).default,
+              }),
+            },
+             {
+              path: "edit/:id",
+              lazy: async () => ({
+                Component: (await import("@/app/pages/coupon/addcoupan")).default,
               }),
             },
           ],
