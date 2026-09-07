@@ -1693,50 +1693,61 @@ export default function CreateProduct() {
         {/* ============================================================ */}
         {/* FOOTER NAV */}
         {/* ============================================================ */}
-        <div className="dark:bg-dark-800 dark:border-dark-700 mt-6 flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4">
-          <Button
-            type="button"
-            variant="outlined"
-            color="neutral"
-            onClick={goPrevious}
-            disabled={tabIndex === 0}
-            className="flex items-center gap-1"
-          >
-            <ChevronLeftIcon className="size-4" />
-            Previous
-          </Button>
-
-          {tabIndex < tabs.length - 1 ? (
+        {/* ============================================================ */}
+        {/* FOOTER NAV */}
+        {/* ============================================================ */}
+        <div className="dark:bg-dark-800 dark:border-dark-700 mt-6 rounded-xl border border-gray-200 bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
               type="button"
-              color="primary"
-              onClick={goNext}
-              className="flex items-center gap-1"
+              variant="outlined"
+              color="neutral"
+              onClick={goPrevious}
+              disabled={tabIndex === 0}
+              className="flex w-full items-center justify-center gap-1 sm:w-auto"
             >
-              Next
-              <ChevronRightIcon className="size-4" />
+              <ChevronLeftIcon className="size-4" />
+              Previous
             </Button>
-          ) : (
-            <div className="flex items-center gap-3">
+
+            {tabIndex < tabs.length - 1 ? (
               <Button
                 type="button"
-                variant="outlined"
-                color="neutral"
-                onClick={() => setActiveTab("product")}
+                color="primary"
+                onClick={goNext}
+                className="flex w-full items-center justify-center gap-1 sm:w-auto"
               >
-                View All Sections
+                Next
+                <ChevronRightIcon className="size-4" />
               </Button>
-              <Button type="submit" color="primary" disabled={submitting}>
-                {submitting
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Submitting..."
-                  : isEditMode
-                    ? "Update Product"
-                    : "Submit for Verification"}
-              </Button>
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="neutral"
+                  onClick={() => setActiveTab("product")}
+                  className="w-full sm:w-auto"
+                >
+                  View All Sections
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  disabled={submitting}
+                  className="w-full sm:w-auto"
+                >
+                  {submitting
+                    ? isEditMode
+                      ? "Updating..."
+                      : "Submitting..."
+                    : isEditMode
+                      ? "Update Product"
+                      : "Submit for Verification"}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </form>
     </div>
