@@ -28,6 +28,8 @@ import { DatePicker } from "@/components/shared/form/Datepicker";
 import { toast } from "sonner";
 import apiHelper from "../../../utils/apiHelper";
 import { Combobox } from "@/components/shared/form/Combobox";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 // ================================
 // TYPES
 // ================================
@@ -136,9 +138,12 @@ const Coupon = () => {
   const [viewOpen, setViewOpen] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState<CouponType | null>(null);
 
-  // ---------- Delete confirm ----------
-  const [deleteTarget, setDeleteTarget] = useState<CouponType | null>(null);
 
+// ---------- Delete confirm ----------
+const [deleteTarget, setDeleteTarget] = useState<CouponType | null>(null);
+const [showConfirmModal, setShowConfirmModal] = useState(false);
+const [confirmState, setConfirmState] = useState<"pending" | "success" | "error">("pending");
+const [confirmLoading, setConfirmLoading] = useState(false);
   const entriesOptions = [
     { id: 10, name: "10" },
     { id: 20, name: "20" },
@@ -271,26 +276,33 @@ const Coupon = () => {
   // ================================
   // DELETE COUPON
   // ================================
-
-  const handleDeleteCoupon = async () => {
-    if (!deleteTarget) return;
-    try {
-      setDeletingId(deleteTarget.id);
-      const data = await apiHelper.delete(`/vendor-panel/coupons/${deleteTarget.id}`);
-      if (data.success) {
-        toast.success("Coupon deleted");
-        setCoupons((prev) => prev.filter((c) => c.id !== deleteTarget.id));
-        setDeleteTarget(null);
-      } else {
-        toast.error(data.message || "Failed to delete coupon");
-      }
-    } catch (err: any) {
-      console.error("handleDeleteCoupon error:", err);
-      toast.error(err.response?.data?.message || "Failed to delete coupon");
-    } finally {
-      setDeletingId(null);
+const handleDeleteClick = (coupon: CouponType) => {
+  setDeleteTarget(coupon);
+  setConfirmState("pending");
+  setShowConfirmModal(true);
+};
+const performDelete = async () => {
+  if (!deleteTarget) return;
+  setConfirmLoading(true);
+  try {
+    const data = await apiHelper.delete(`/vendor-panel/coupons/${deleteTarget.id}`);
+    if (data.success) {
+      toast.success("Coupon deleted");
+      setCoupons((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+      setConfirmState("success");
+      setTimeout(() => setShowConfirmModal(false), 1500);
+    } else {
+      setConfirmState("error");
+      toast.error(data.message || "Failed to delete coupon");
     }
-  };
+  } catch (err: any) {
+    console.error("handleDeleteCoupon error:", err);
+    setConfirmState("error");
+    toast.error(err.response?.data?.message || "Failed to delete coupon");
+  } finally {
+    setConfirmLoading(false);
+  }
+};
 
   // ================================
   // HELPERS
@@ -544,7 +556,7 @@ const Coupon = () => {
                         <button
                           type="button"
                           onClick={() => handleEditCoupon(coupon)}
-                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-blue-500 transition-colors hover:bg-blue-50"
+                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-blue-500 transition-colors hover:bg-blue-50 cursor-pointer"
                           title="Edit coupon"
                         >
                           <Pencil className="h-4 w-4" />
@@ -552,7 +564,7 @@ const Coupon = () => {
                         <button
                           type="button"
                           onClick={() => handleViewCoupon(coupon)}
-                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-green-500 transition-colors hover:bg-green-50"
+                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-green-500 transition-colors hover:bg-green-50 cursor-pointer"
                           title="View coupon"
                         >
                           <Eye className="h-4 w-4" />
@@ -561,15 +573,15 @@ const Coupon = () => {
                           type="button"
                           onClick={() => handleToggleStatus(coupon)}
                           disabled={togglingId === coupon.id}
-                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-purple-500 transition-colors hover:bg-purple-50 disabled:opacity-50"
+                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-purple-500 transition-colors hover:bg-purple-50 disabled:opacity-50 cursor-pointer"
                           title={coupon.status === "ACTIVE" ? "Deactivate coupon" : "Activate coupon"}
                         >
                           <DollarSign className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
-                          onClick={() => setDeleteTarget(coupon)}
-                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50"
+                          onClick={() => handleDeleteClick(coupon)}
+                          className="dark:hover:bg-dark-600 inline-flex size-8 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50 cursor-pointer"
                           title="Delete coupon"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -971,61 +983,35 @@ const Coupon = () => {
       {/* =====================================
           DELETE CONFIRM MODAL
       ====================================== */}
-      <Transition show={!!deleteTarget} as={Fragment}>
-        <Dialog onClose={() => setDeleteTarget(null)} className="relative z-300">
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-200"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-150"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/60" aria-hidden="true" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-200"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-150"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel className="dark:bg-dark-800 w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-                <Dialog.Title className="text-base font-semibold text-gray-900 dark:text-white">
-                  Delete Coupon
-                </Dialog.Title>
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Are you sure you want to delete{" "}
-                  <span className="font-medium text-gray-800 dark:text-gray-200">
-                    {deleteTarget?.title}
-                  </span>
-                  ? This action cannot be undone.
-                </p>
-                <div className="mt-6 flex gap-3">
-                  <button
-                    onClick={() => setDeleteTarget(null)}
-                    className="dark:border-dark-600 dark:hover:bg-dark-700 flex-1 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:text-gray-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteCoupon}
-                    disabled={deletingId === deleteTarget?.id}
-                    className="flex-1 rounded-lg bg-red-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {deletingId === deleteTarget?.id ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition>
+     <ConfirmModal
+  show={showConfirmModal}
+  onClose={() => {
+    setShowConfirmModal(false);
+    setDeleteTarget(null);
+    setConfirmState("pending");
+  }}
+  onOk={performDelete}
+  confirmLoading={confirmLoading}
+  state={confirmState}
+  messages={{
+    pending: {
+      Icon: ExclamationTriangleIcon,
+      title: "Are you sure?",
+      description: `Are you sure you want to delete "${deleteTarget?.title}"? This action cannot be undone.`,
+      actionText: "Delete",
+    },
+    success: {
+      title: "Deleted Successfully",
+      description: "The coupon has been deleted.",
+      actionText: "Done",
+    },
+    error: {
+      title: "Delete Failed",
+      description: "Failed to delete. Please try again.",
+      actionText: "Try Again",
+    },
+  }}
+/>
     </div>
   );
 };

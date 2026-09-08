@@ -184,6 +184,16 @@ const protectedRoutes: RouteObject = {
                   await import("@/app/pages/productmaster/createproduct")
                 ).default,
               }),
+              
+            },
+             {
+              path: "view/:id",
+              lazy: async () => ({
+                Component: (
+                  await import("@/app/pages/productmaster/ProductView")
+                ).default,
+              }),
+              
             },
             // {
             //   path: "product/:id",

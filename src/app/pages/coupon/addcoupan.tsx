@@ -25,6 +25,30 @@ const APPLY_ON_OPTIONS = [
 ];
 
 // ================================
+// DATE HELPERS (timezone-safe)
+// ================================
+
+/**
+ * Converts a Date object OR an ISO string (from backend, e.g.
+ * "2026-09-07T18:30:00.000Z") into a plain "YYYY-MM-DD" string
+ * using the browser's LOCAL calendar date (not UTC).
+ *
+ * This is the key fix: using .slice(0, 10) on a UTC ISO string
+ * gives the UTC date, which can be one day off from the date the
+ * user actually picked (e.g. IST is UTC+5:30, so midnight IST on
+ * 08-Sep becomes 18:30 UTC on 07-Sep — slicing gives "07", not "08").
+ */
+const toLocalDateStr = (value: Date | string | null | undefined): string => {
+  if (!value) return "";
+  const d = value instanceof Date ? value : new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// ================================
 // VALIDATION SCHEMA
 // ================================
 
@@ -187,8 +211,11 @@ const AddCoupon = () => {
             c.maxDiscountAmount !== null && c.maxDiscountAmount !== undefined
               ? Number(c.maxDiscountAmount)
               : undefined,
-          startDate: c.startDate ? c.startDate.slice(0, 10) : "",
-          expiryDate: c.endDate ? c.endDate.slice(0, 10) : "",
+          // FIX: use local-timezone date extraction instead of
+          // c.startDate.slice(0, 10) which read the raw UTC date
+          // and was off by one day in IST.
+          startDate: toLocalDateStr(c.startDate),
+          expiryDate: toLocalDateStr(c.endDate),
           applyOn: c.applyOn || "ALL_PRODUCTS",
           applyOnIds: (c.products || []).map((cp: any) => cp.productId),
           displayMessage: c.displayMessage || "",
@@ -211,6 +238,14 @@ const AddCoupon = () => {
       const payload = {
         ...values,
         code: values.code.toUpperCase(),
+        // FIX: always send plain YYYY-MM-DD strings, never raw Date
+        // objects. Date objects get JSON.stringify'd via
+        // toISOString() (UTC midnight), which is what caused the
+        // drift in the first place. The backend should interpret
+        // these as calendar dates (ideally store as DATE, not
+        // TIMESTAMPTZ).
+        startDate: toLocalDateStr(values.startDate as any),
+        expiryDate: toLocalDateStr(values.expiryDate as any),
         status: values.isActive ? "ACTIVE" : "INACTIVE",
       };
 
@@ -421,7 +456,11 @@ const AddCoupon = () => {
                   value={field.value}
                   options={{ disableMobile: true }}
                   onChange={(date: any) => {
-                    field.onChange(Array.isArray(date) ? date[0] : date);
+                    // FIX: normalize to a plain local YYYY-MM-DD
+                    // string immediately, so no Date object with a
+                    // hidden UTC offset ever enters form state.
+                    const picked = Array.isArray(date) ? date[0] : date;
+                    field.onChange(toLocalDateStr(picked));
                   }}
                   placeholder="Select start date"
                 />
@@ -445,7 +484,8 @@ const AddCoupon = () => {
                   value={field.value}
                   options={{ disableMobile: true }}
                   onChange={(date: any) => {
-                    field.onChange(Array.isArray(date) ? date[0] : date);
+                    const picked = Array.isArray(date) ? date[0] : date;
+                    field.onChange(toLocalDateStr(picked));
                   }}
                   placeholder="Select expiry date"
                 />

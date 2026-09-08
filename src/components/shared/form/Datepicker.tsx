@@ -23,7 +23,8 @@ import { Flatpickr, FlatpickrProps, FlatpickrRef } from "./Flatpickr";
 
 // Define prop types for the DatePicker component
 interface DatePickerProps
-  extends Omit<FlatpickrProps, "options">,
+  extends
+    Omit<FlatpickrProps, "options">,
     Omit<
       InputProps<"input">,
       "defaultValue" | "value" | "onChange" | "prefix" | "type"
@@ -71,12 +72,12 @@ const DatePicker = forwardRef<FlatpickrRef, DatePickerProps>(
       loadLocale();
     }, [locale]);
 
-  const options = {
-  dateFormat: "d-m-Y",
-  inline: isCalendar,
-  locale: localeData,
-  ...userOptions,
-};
+    const options = {
+      dateFormat: "d-m-Y",
+      inline: isCalendar,
+      locale: localeData,
+      ...userOptions,
+    };
 
     const mergedRef = useMergedRef(flatpickrRef, ref);
 
