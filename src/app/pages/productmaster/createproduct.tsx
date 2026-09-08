@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, useMemo } from "react";
+import {  useEffect, useState, useMemo } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import {
   ChevronLeftIcon,
@@ -1690,12 +1690,7 @@ export default function CreateProduct() {
           </div>
         )}
 
-        {/* ============================================================ */}
-        {/* FOOTER NAV */}
-        {/* ============================================================ */}
-        {/* ============================================================ */}
-        {/* FOOTER NAV */}
-        {/* ============================================================ */}
+       
         <div className="dark:bg-dark-800 dark:border-dark-700 mt-6 rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button

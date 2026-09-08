@@ -183,7 +183,7 @@ export default function ProductList() {
   };
 
   const handleViewProduct = (id: number) => {
-    navigate(`/productmaster/product/${id}`);
+    navigate(`/productmaster/view/${id}`);
   };
 
   // ---- delete ----
@@ -626,7 +626,7 @@ export default function ProductList() {
                                   onClick={() => handleEditProduct(item.id)}
                                   className={`${
                                     active
-                                      ? "dark:bg-dark-600 text-primary-600 bg-gray-50 dark:text-white"
+                                      ? "dark:bg-dark-600 text-primary-600 bg-gray-50 dark:text-white "
                                       : "dark:text-dark-200 text-gray-700"
                                   } flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium`}
                                 >

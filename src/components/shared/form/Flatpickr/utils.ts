@@ -43,18 +43,29 @@ export const formatDateValue = (
 ) => {
   const dateFormat = instance.config.dateFormat;
 
-  if (Array.isArray(val)) {
-    return val.map((date) => {
-      if (date instanceof Date) {
-        return instance.formatDate(date, dateFormat);
+  const formatSingle = (date: DateOption): DateOption => {
+    if (date instanceof Date) {
+      return instance.formatDate(date, dateFormat);
+    }
+
+    if (typeof date === "string" && date !== "") {
+      // Agar string already flatpickr ke dateFormat ke mutabik nahi hai
+      // (e.g. "2026-06-20" ya ISO "2026-06-20T00:00:00.000Z"),
+      // to pehle native Date mein parse karo, phir sahi format mein convert karo.
+      const parsed = new Date(date);
+      if (!isNaN(parsed.getTime())) {
+        return instance.formatDate(parsed, dateFormat);
       }
-      return date;
-    });
-  } else if (val instanceof Date) {
-    return instance.formatDate(val, dateFormat);
+    }
+
+    return date;
+  };
+
+  if (Array.isArray(val)) {
+    return val.map(formatSingle);
   }
 
-  return val;
+  return formatSingle(val);
 };
 
 export const formatAndSetValue = (
