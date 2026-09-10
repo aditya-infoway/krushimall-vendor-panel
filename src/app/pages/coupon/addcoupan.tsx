@@ -52,31 +52,53 @@ const toLocalDateStr = (value: Date | string | null | undefined): string => {
 // VALIDATION SCHEMA
 // ================================
 
+// ================================
+// VALIDATION SCHEMA
+// ================================
+
 const schema = yup.object({
-  couponType: yup.string().oneOf(["PERCENTAGE", "FIXED"]).required("Coupon type is required"),
-  title: yup.string().trim().required("Title is required"),
+  couponType: yup
+    .string()
+    .oneOf(["PERCENTAGE", "FIXED"])
+    .required("Coupon type is required"),
+
+  title: yup
+    .string()
+    .trim()
+    .required("Title is required"),
+
   code: yup
     .string()
     .trim()
     .uppercase()
-    .matches(/^[A-Z0-9]+$/, "Only letters and numbers allowed (no spaces or symbols)")
+    .matches(
+      /^[A-Z0-9]+$/,
+      "Only letters and numbers allowed (no spaces or symbols)"
+    )
     .required("Coupon code is required"),
+
   limitPerUser: yup
     .number()
     .typeError("Limit per user is required")
     .min(1, "Must be at least 1")
     .required("Limit per user is required"),
+
   maxUsageCount: yup
     .number()
     .typeError("Must be a number")
     .min(1, "Must be at least 1")
     .nullable()
-    .transform((val, orig) => (orig === "" ? null : val)),
+    .optional()
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value
+    ),
+
   minOrderValue: yup
     .number()
     .typeError("Min order value is required")
     .min(0, "Cannot be negative")
     .required("Min order value is required"),
+
   discountValue: yup
     .number()
     .typeError("Discount value is required")
@@ -84,15 +106,24 @@ const schema = yup.object({
     .required("Discount value is required")
     .when("couponType", {
       is: "PERCENTAGE",
-      then: (s) => s.max(100, "Percentage cannot exceed 100"),
+      then: (s) =>
+        s.max(100, "Percentage cannot exceed 100"),
     }),
+
   maxDiscountAmount: yup
     .number()
     .typeError("Must be a number")
     .min(0, "Cannot be negative")
     .nullable()
-    .transform((val, orig) => (orig === "" ? null : val)),
-  startDate: yup.string().required("Start date is required"),
+    .optional()
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value
+    ),
+
+  startDate: yup
+    .string()
+    .required("Start date is required"),
+
   expiryDate: yup
     .string()
     .required("Expiry date is required")
@@ -101,23 +132,57 @@ const schema = yup.object({
       "Expiry date must be after start date",
       function (value) {
         const { startDate } = this.parent;
+
         if (!startDate || !value) return true;
+
         return new Date(value) >= new Date(startDate);
-      },
+      }
     ),
-  applyOn: yup.string().required("Apply on is required"),
+
+  applyOn: yup
+    .string()
+    .oneOf(["ALL_PRODUCTS", "SPECIFIC_PRODUCTS"])
+    .required("Apply on is required"),
+
   applyOnIds: yup
     .array()
     .of(yup.number())
+    .optional()
+    .default([])
     .when("applyOn", {
       is: "SPECIFIC_PRODUCTS",
-      then: (s) => s.min(1, "Please select at least one product"),
+      then: (s) =>
+        s.min(1, "Please select at least one product"),
     }),
-  displayMessage: yup.string().trim().optional(),
-  isActive: yup.boolean().required(),
+
+  displayMessage: yup
+    .string()
+    .trim()
+    .optional(),
+
+  isActive: yup
+    .boolean()
+    .required(),
 });
 
-type FormValues = yup.InferType<typeof schema>;
+
+
+type FormValues = {
+  couponType: "PERCENTAGE" | "FIXED";
+  title: string;
+  code: string;
+  limitPerUser: number;
+  maxUsageCount: number | null | undefined;
+  minOrderValue: number;
+  discountValue: number | undefined;
+  maxDiscountAmount: number | null | undefined;
+  startDate: string;
+  expiryDate: string;
+  applyOn: "ALL_PRODUCTS" | "SPECIFIC_PRODUCTS";
+  applyOnIds: number[];
+  displayMessage: string;
+  isActive: boolean;
+};
 
 // ================================
 // COMPONENT
@@ -133,33 +198,33 @@ const AddCoupon = () => {
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const {
-    control,
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<FormValues>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      couponType: "PERCENTAGE",
-      title: "",
-      code: "",
-      limitPerUser: 1,
-      maxUsageCount: undefined,
-      minOrderValue: 0,
-      discountValue: undefined,
-      maxDiscountAmount: undefined,
-      startDate: "",
-      expiryDate: "",
-      applyOn: "ALL_PRODUCTS",
-      applyOnIds: [],
-      displayMessage: "",
-      isActive: true,
-    },
-  });
+const {
+  control,
+  register,
+  handleSubmit,
+  watch,
+  setValue,
+  reset,
+  formState: { errors },
+} = useForm<FormValues>({
+ resolver: yupResolver(schema) as any,
+ defaultValues: {
+  couponType: "PERCENTAGE",
+  title: "",
+  code: "",
+  limitPerUser: 1,
+  maxUsageCount: null,
+  minOrderValue: 0,
+  discountValue: 0,
+  maxDiscountAmount: null,
+  startDate: "",
+  expiryDate: "",
+  applyOn: "ALL_PRODUCTS",
+  applyOnIds: [],
+  displayMessage: "",
+  isActive: true,
+},
+});
 
   const couponType = watch("couponType");
   const isActive = watch("isActive");
@@ -204,13 +269,14 @@ const AddCoupon = () => {
           title: c.title || "",
           code: c.code || "",
           limitPerUser: c.perUserLimit ?? 1,
-          maxUsageCount: c.usageLimit ?? undefined,
+          maxUsageCount: c.usageLimit ?? null,
           minOrderValue: Number(c.minOrderValue) || 0,
           discountValue: Number(c.discountValue),
-          maxDiscountAmount:
-            c.maxDiscountAmount !== null && c.maxDiscountAmount !== undefined
-              ? Number(c.maxDiscountAmount)
-              : undefined,
+       maxDiscountAmount:
+  c.maxDiscountAmount !== null &&
+  c.maxDiscountAmount !== undefined
+    ? Number(c.maxDiscountAmount)
+    : null,
           // FIX: use local-timezone date extraction instead of
           // c.startDate.slice(0, 10) which read the raw UTC date
           // and was off by one day in IST.
