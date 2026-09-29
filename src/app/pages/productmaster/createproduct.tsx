@@ -1,4 +1,4 @@
-import {  useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import {
   ChevronLeftIcon,
@@ -251,8 +251,8 @@ export default function CreateProduct() {
   // ---- country options (for Country of Origin select) ----
   const countryOptions = useMemo(() => {
     return Country.getAllCountries().map((c) => ({
-      value: c.name,
-      label: c.name,
+      id: c.name,
+      name: c.name,
     }));
   }, []);
 
@@ -854,25 +854,19 @@ export default function CreateProduct() {
                   name="countryOfOrigin"
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      options={countryOptions}
-                      styles={customSelectStyles}
-                      classNamePrefix="react-select"
+                    <Combobox
+                      data={countryOptions}
+                      displayField="name"
+                      searchFields={["name"]}
                       placeholder="Search Country"
-                      isClearable
                       value={
-                        countryOptions.find(
-                          (option) => option.value === field.value,
-                        ) || null
+                        countryOptions.find((o) => o.id === field.value) || null
                       }
-                      onChange={(selected) => {
-                        field.onChange(selected?.value || "");
-                      }}
+                      onChange={(opt: any) => field.onChange(opt?.id || "")}
                     />
                   )}
                 />
               </div>
-
               <div>
                 <span className="mb-1.5 block text-sm font-medium">
                   Category
@@ -1690,7 +1684,6 @@ export default function CreateProduct() {
           </div>
         )}
 
-       
         <div className="dark:bg-dark-800 dark:border-dark-700 mt-6 rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Button
