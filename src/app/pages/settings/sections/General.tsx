@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import { toast } from "sonner";
-
+import { Combobox } from "@/components/shared/form/StyledCombobox";
 // Local Imports
 import { Avatar, Button, Input, Upload } from "@/components/ui";
 import apiHelper from "@/utils/apiHelper";
@@ -178,56 +178,56 @@ export default function General() {
     }
   };
 
-  const customSelectStyles = {
-    control: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: "transparent",
-      borderColor: state.isFocused
-        ? "var(--color-primary-600)"
-        : "var(--color-dark-450)",
-      boxShadow: "none",
-      minHeight: "42px",
-      "&:hover": {
-        borderColor: state.isFocused
-          ? "var(--color-primary-600)"
-          : "var(--color-dark-400)",
-      },
-    }),
-    singleValue: (provided: any) => ({
-      ...provided,
-      color: "var(--color-dark-100)",
-    }),
-    input: (provided: any) => ({
-      ...provided,
-      color: "var(--color-dark-100)",
-    }),
-    placeholder: (provided: any) => ({
-      ...provided,
-      color: "var(--color-gray-400)",
-    }),
-    menu: (provided: any) => ({
-      ...provided,
-      backgroundColor: "var(--color-dark-700)",
-      border: "1px solid var(--color-dark-450)",
-      borderRadius: "0.75rem",
-    }),
-    option: (provided: any, state: any) => ({
-      ...provided,
-      backgroundColor: state.isSelected
-        ? "var(--color-primary-600)"
-        : state.isFocused
-          ? "var(--color-dark-600)"
-          : "var(--color-dark-700)",
-      color: "#fff",
-    }),
-    dropdownIndicator: (provided: any) => ({
-      ...provided,
-      color: "var(--color-gray-400)",
-    }),
-    indicatorSeparator: () => ({
-      display: "none",
-    }),
-  };
+  // const customSelectStyles = {
+  //   control: (provided: any, state: any) => ({
+  //     ...provided,
+  //     backgroundColor: "transparent",
+  //     borderColor: state.isFocused
+  //       ? "var(--color-primary-600)"
+  //       : "var(--color-dark-450)",
+  //     boxShadow: "none",
+  //     minHeight: "42px",
+  //     "&:hover": {
+  //       borderColor: state.isFocused
+  //         ? "var(--color-primary-600)"
+  //         : "var(--color-dark-400)",
+  //     },
+  //   }),
+  //   singleValue: (provided: any) => ({
+  //     ...provided,
+  //     color: "var(--color-dark-100)",
+  //   }),
+  //   input: (provided: any) => ({
+  //     ...provided,
+  //     color: "var(--color-dark-100)",
+  //   }),
+  //   placeholder: (provided: any) => ({
+  //     ...provided,
+  //     color: "var(--color-gray-400)",
+  //   }),
+  //   menu: (provided: any) => ({
+  //     ...provided,
+  //     backgroundColor: "var(--color-dark-700)",
+  //     border: "1px solid var(--color-dark-450)",
+  //     borderRadius: "0.75rem",
+  //   }),
+  //   option: (provided: any, state: any) => ({
+  //     ...provided,
+  //     backgroundColor: state.isSelected
+  //       ? "var(--color-primary-600)"
+  //       : state.isFocused
+  //         ? "var(--color-dark-600)"
+  //         : "var(--color-dark-700)",
+  //     color: "#fff",
+  //   }),
+  //   dropdownIndicator: (provided: any) => ({
+  //     ...provided,
+  //     color: "var(--color-gray-400)",
+  //   }),
+  //   indicatorSeparator: () => ({
+  //     display: "none",
+  //   }),
+  // };
 
   return (
     <div className="w-full">
@@ -359,79 +359,87 @@ export default function General() {
               />
 
               <div>
-                <label className="mb-1 inline-block">Country</label>
-                <Select
-                  isDisabled={!isEditing}
-                  classNamePrefix="react-select"
-                  options={countryOptions}
-                  styles={customSelectStyles}
-                  value={countryOptions.find((c) => c.value === countryIso)}
-                  onChange={(selected: any) =>
-                    setVendorInfo({
-                      ...vendorInfo,
-                      country: selected?.label || "",
-                      state: "",
-                      district: "",
-                      city: "",
-                    })
-                  }
-                />
-              </div>
+  <label className="mb-1 inline-block">Country</label>
+  <div className={!isEditing ? "pointer-events-none" : ""}>
+    <Combobox
+      data={countryOptions}
+      displayField="label"
+      searchFields={["label"]}
+      placeholder="Select Country"
+      value={countryOptions.find((c) => c.value === countryIso) || null}
+      onChange={(selected: any) =>
+        setVendorInfo({
+          ...vendorInfo,
+          country: selected?.label || "",
+          state: "",
+          district: "",
+          city: "",
+        })
+      }
+    />
+  </div>
+</div>
 
-              <div>
-                <label className="mb-1 inline-block">State</label>
-                <Select
-                  isDisabled={!isEditing}
-                  classNamePrefix="react-select"
-                  options={stateOptions}
-                  styles={customSelectStyles}
-                  value={stateOptions.find((s) => s.value === stateIso)}
-                  onChange={(selected: any) =>
-                    setVendorInfo({
-                      ...vendorInfo,
-                      state: selected?.label || "",
-                      district: "",
-                      city: "",
-                    })
-                  }
-                />
-              </div>
+<div>
+  <label className="mb-1 inline-block">State</label>
+  <div className={!isEditing ? "pointer-events-none" : ""}>
+    <Combobox
+      data={stateOptions}
+      displayField="label"
+      searchFields={["label"]}
+      placeholder="Select State"
+      value={stateOptions.find((s) => s.value === stateIso) || null}
+      onChange={(selected: any) =>
+        setVendorInfo({
+          ...vendorInfo,
+          state: selected?.label || "",
+          district: "",
+          city: "",
+        })
+      }
+    />
+  </div>
+</div>
 
-              <div>
-                <label className="mb-1 inline-block">District</label>
-                <Select
-                  isDisabled={!isEditing}
-                  classNamePrefix="react-select"
-                  options={cityOptions}
-                  styles={customSelectStyles}
-                  value={cityOptions.find(
-                    (d) => d.value === vendorInfo?.district,
-                  )}
-                  onChange={(selected: any) =>
-                    setVendorInfo({
-                      ...vendorInfo,
-                      district: selected?.value || "",
-                    })
-                  }
-                />
-              </div>
+<div>
+  <label className="mb-1 inline-block">District</label>
+  <div className={!isEditing ? "pointer-events-none" : ""}>
+    <Combobox
+      data={cityOptions}
+      displayField="label"
+      searchFields={["label"]}
+      placeholder="Select District"
+      value={
+        cityOptions.find((d) => d.value === vendorInfo?.district) || null
+      }
+      onChange={(selected: any) =>
+        setVendorInfo({
+          ...vendorInfo,
+          district: selected?.value || "",
+        })
+      }
+    />
+  </div>
+</div>
 
-              <div>
-                <label className="mb-1 inline-block">City</label>
-                <Select
-                  isDisabled={!isEditing}
-                  classNamePrefix="react-select"
-                  options={cityOptions}
-                  styles={customSelectStyles}
-                  value={cityOptions.find((c) => c.value === vendorInfo?.city)}
-                  onChange={(selected: any) =>
-                    setVendorInfo({
-                      ...vendorInfo,
-                      city: selected?.value || "",
-                    })
-                  }
-                />
-              </div>
+<div>
+  <label className="mb-1 inline-block">City</label>
+  <div className={!isEditing ? "pointer-events-none" : ""}>
+    <Combobox
+      data={cityOptions}
+      displayField="label"
+      searchFields={["label"]}
+      placeholder="Select City"
+      value={cityOptions.find((c) => c.value === vendorInfo?.city) || null}
+      onChange={(selected: any) =>
+        setVendorInfo({
+          ...vendorInfo,
+          city: selected?.value || "",
+        })
+      }
+    />
+  </div>
+</div>
 
               <Input
                 label="Pincode"
