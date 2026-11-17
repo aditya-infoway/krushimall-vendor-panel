@@ -10,10 +10,13 @@ import { useDidUpdate } from "@/hooks";
 import { isRouteActive } from "@/utils/isRouteActive";
 import { MainPanel } from "./MainPanel";
 import { PrimePanel } from "./PrimePanel";
-
+import { settings } from "@/app/navigation/segments/settings";
 // ----------------------------------------------------------------------
 
 export type SegmentPath = string | undefined;
+
+// settings rail me nahi dikhta, par uska panel chahiye
+const allSegments = [...navigation, settings];
 
 export function Sidebar() {
   const { pathname } = useLocation();
@@ -21,7 +24,7 @@ export function Sidebar() {
   const { isExpanded, close } = useSidebarContext();
 
   const initialSegment = useMemo(
-    () => navigation.find((item) => isRouteActive(item.path, pathname)),
+    () => allSegments.find((item) => isRouteActive(item.path, pathname)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -31,11 +34,11 @@ export function Sidebar() {
   );
 
   const currentSegment = useMemo(() => {
-    return navigation.find((item) => item.path === activeSegmentPath);
+    return allSegments.find((item) => item.path === activeSegmentPath);
   }, [activeSegmentPath]);
 
   useDidUpdate(() => {
-    const activePath = navigation.find((item) =>
+    const activePath = allSegments.find((item) =>
       isRouteActive(item.path, pathname),
     )?.path;
 

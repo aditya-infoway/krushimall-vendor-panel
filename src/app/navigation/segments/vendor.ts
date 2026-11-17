@@ -4,7 +4,8 @@ export const vendor: NavigationTree = {
   id: "vendor",
   type: "root",
   title: "vendor",
-  icon: "follow",
+  icon: "follow", 
+    path: "/vendor",
   childs: [
    
     {

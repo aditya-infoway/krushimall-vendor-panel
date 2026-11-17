@@ -8,6 +8,7 @@ import {
   ClipboardDocumentListIcon,
   ShoppingCartIcon,
   ExclamationTriangleIcon,
+  ArrowLeftStartOnRectangleIcon
 } from "@heroicons/react/24/outline";
 import { ElementType } from "react";
 import {
@@ -32,6 +33,7 @@ import SettingIcon from "@/assets/dualicons/setting.svg?react";
 
 export const navigationIcons: Record<string, ElementType> = {
   dashboards: DashboardsIcon,
+      logout: ArrowLeftStartOnRectangleIcon,
   user: TbBriefcase,
   settings: SettingIcon,
   "dashboards.home": HomeIcon,

@@ -1,11 +1,17 @@
 // Import Dependencies
-import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import {
+  EnvelopeIcon,
+  LockClosedIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router";
 
 // Local Imports
-import Logo from "@/assets/appLogo.svg?react";
+import logo from "@/assets/logo.png";
 import { Button, Card, Input, InputErrorMsg } from "@/components/ui";
 import { useAuthContext } from "@/app/contexts/auth/context";
 import { AuthFormValues, schema } from "./schema";
@@ -14,6 +20,7 @@ import { Page } from "@/components/shared/Page";
 // ----------------------------------------------------------------------
 
 export default function SignIn() {
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login, errorMessage, isAuthenticated, isInitialized } =
     useAuthContext();
@@ -30,15 +37,12 @@ export default function SignIn() {
     },
   });
 
-  // Jab tak AuthProvider ka init() (token validate karne wala) complete
-  // nahi hota, tab tak kuch render mat karo — nahi to login form
-  // ek pal ke liye flash hoga, chahe user already logged-in ho.
+  // Auth init hone tak kuch render mat karo (login form flash na ho)
   if (!isInitialized) {
-    return null; // yahan chaho to apna loader/spinner laga sakte ho
+    return null;
   }
 
-  // Agar valid token already localStorage me hai (isAuthenticated true),
-  // to login page dikhane ki zarurat nahi — seedha redirect.
+  // Already logged-in ho to seedha redirect
   if (isAuthenticated) {
     return <Navigate to="/select-company" replace />;
   }
@@ -50,85 +54,112 @@ export default function SignIn() {
     });
 
     if (success) {
-      navigate("/select-company", {
-        replace: true,
-      });
+      navigate("/select-company", { replace: true });
     }
   };
 
   return (
     <Page title="Vendor Login">
-      <div className="flex h-screen">
-        <div className="dark:bg-dark-700 flex w-full items-center justify-center bg-white xl:w-1/2">
-          <div className="w-full max-w-md px-6">
-            <div className="text-center">
-              <Logo className="mx-auto size-16" />
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full">
+          <div className="grid min-h-screen grid-cols-1 gap-0 overflow-hidden lg:grid-cols-2">
+            {/* Left Side - Form */}
+            <div className="flex items-center justify-center bg-white p-6 sm:p-8 lg:p-10">
+              <Card
+                className="w-full rounded-lg bg-transparent p-5 lg:p-7"
+                style={{ overflow: "visible" }}
+              >
+                {/* Logo */}
+                <div className="mb-8 flex justify-center">
+                  <img
+                    src={logo}
+                    alt="KrushiMall"
+                    className="h-14 w-auto object-contain sm:h-28"
+                  />
+                </div>
 
-              <div className="mt-4">
-                <h2 className="text-2xl font-semibold text-gray-600 dark:text-dark-100">
-                  Welcome Back
-                </h2>
+                <div className="border-primary-600 dark:border-primary-400 w-full rounded-[40px] border-y-[6px]"></div>
 
-                <p className="text-gray-400 dark:text-dark-300">
-                  Please sign in to continue
-                </p>
-              </div>
+                <div className="mt-6 text-left">
+                  <h2 className="text-2xl font-bold text-gray-800 sm:text-3xl">
+                    Welcome to{" "}
+                    <span className="text-primary-600">KrushiMall</span>
+                  </h2>
+                  {/* <p className="mt-1 leading-relaxed text-gray-600">
+                    Please sign in to continue
+                  </p> */}
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
+                  <div className="mt-6 space-y-4">
+                    <Input
+                      label="Email"
+                      placeholder="Enter Email"
+                      prefix={
+                        <EnvelopeIcon
+                          className="size-5 text-gray-500"
+                          strokeWidth="1"
+                        />
+                      }
+                      className="focus:border-primary border-gray-300 bg-white text-gray-800"
+                      {...register("email")}
+                      error={errors?.email?.message}
+                    />
+                    <Input
+                      label="Password"
+                      placeholder="Enter Password"
+                      type={showPassword ? "text" : "password"}
+                      prefix={
+                        <LockClosedIcon
+                          className="size-5 text-gray-500"
+                          strokeWidth="1"
+                        />
+                      }
+                      suffix={
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? (
+                            <EyeSlashIcon className="size-5" />
+                          ) : (
+                            <EyeIcon className="size-5" />
+                          )}
+                        </button>
+                      }
+                      className="focus:border-primary border-gray-300 bg-white text-gray-800"
+                      {...register("password")}
+                      error={errors?.password?.message}
+                    />
+                  </div>
+
+                  <div className="mt-2">
+                    <InputErrorMsg
+                      when={(errorMessage && errorMessage !== "") as boolean}
+                    >
+                      {errorMessage}
+                    </InputErrorMsg>
+                  </div>
+
+                  <Button type="submit" className="mt-5 w-full" color="primary">
+                    Sign In
+                  </Button>
+                </form>
+              </Card>
             </div>
 
-            <Card className="mt-6 rounded-lg p-5 lg:p-7">
-              <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
-                <div className="space-y-4">
-                  <Input
-                    label="Email"
-                    placeholder="Enter Email"
-                    prefix={
-                      <EnvelopeIcon
-                        className="size-5 transition-colors duration-200"
-                        strokeWidth="1"
-                      />
-                    }
-                    {...register("email")}
-                    error={errors?.email?.message}
-                  />
-                  <Input
-                    label="Password"
-                    placeholder="Enter Password"
-                    type="password"
-                    prefix={
-                      <LockClosedIcon
-                        className="size-5 transition-colors duration-200"
-                        strokeWidth="1"
-                      />
-                    }
-                    {...register("password")}
-                    error={errors?.password?.message}
-                  />
-                </div>
-
-                <div className="mt-2">
-                  <InputErrorMsg
-                    when={(errorMessage && errorMessage !== "") as boolean}
-                  >
-                    {errorMessage}
-                  </InputErrorMsg>
-                </div>
-
-                <Button type="submit" className="mt-5 w-full" color="primary">
-                  Sign In
-                </Button>
-              </form>
-            </Card>
+            {/* Right Side - Image */}
+            <div className="relative hidden items-center justify-center lg:flex">
+              <img
+                src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a"
+                alt="company"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </div>
           </div>
         </div>
-
-        <div className="hidden h-full xl:block xl:w-1/2">
-          <img
-            src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a"
-            alt="company"
-            className="h-full w-full object-cover"
-          />
-        </div>
-      </div>
+      </main>
     </Page>
   );
 }

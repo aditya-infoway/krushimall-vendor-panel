@@ -5,6 +5,7 @@ export const productmaster: NavigationTree = {
   type: "root",
   title: "Product master",
   icon: "master",
+     path: "/productmaster",
   childs: [
     {
       id: "product",

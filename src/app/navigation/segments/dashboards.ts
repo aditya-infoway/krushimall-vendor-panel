@@ -5,6 +5,7 @@ export const dashboards: NavigationTree = {
   type: "root",
   title: "Dashboards",
   icon: "dashboards",
+     path: "/dashboards",
   childs: [
     {
       id: "dashboard",

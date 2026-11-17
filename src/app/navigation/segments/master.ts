@@ -5,6 +5,7 @@ export const master: NavigationTree = {
   type: "root",
   title: "Master Data",
   icon: "master",
+     path: "/master",
   childs: [
     {
       id: "category",
@@ -42,13 +43,13 @@ export const master: NavigationTree = {
       path: "/master/year",
   
     },
-    //  {
-    //   id: "color",
-    //   type: "item",
-    //   title: "Colour",
-    //   path: "/master/color",
+     {
+      id: "color",
+      type: "item",
+      title: "Colour",
+      path: "/master/color",
   
-    // },
+    },
 
     // Dropdown
     // {

@@ -45,14 +45,24 @@ export function MenuItem({ data }: { data: NavigationTree  }) {
         <div
           data-menu-active={isActive}
           style={{ height: "34px" }}
-          className="flex items-center justify-between text-xs-plus tracking-wide"
+          className="text-xs-plus flex items-center justify-between tracking-wide"
         >
-          <span className="mr-1 truncate">{title}</span>
+          <div className="flex min-w-0 items-center space-x-2 rtl:space-x-reverse">
+            <div
+              className={clsx(
+                isActive
+                  ? "bg-primary-600 dark:bg-primary-400 opacity-80"
+                  : "opacity-50 transition-all",
+                "size-1.5 rounded-full border border-current",
+              )}
+            ></div>
+            <span className="truncate">{title}</span>
+          </div>
           {info?.val && (
             <Badge
               color={info.color}
               variant="soft"
-              className="h-4.5 min-w-[1rem] shrink-0 p-[5px] text-tiny-plus"
+              className="text-tiny-plus h-4.5 min-w-[1rem] shrink-0 p-[5px]"
             >
               {info.val}
             </Badge>

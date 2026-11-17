@@ -13,6 +13,14 @@ export const baseNavigationObj: Record<string, NavigationTree> = {
     transKey: "nav.dashboards.dashboards",
     icon: "dashboards",
   },
+    logout: {
+    id: "logout",
+    type: "item",
+    path: "/login",
+    title: "Logout",
+    // transKey: "nav.logout",
+    icon: "logout",
+  },
 };
 
 /**

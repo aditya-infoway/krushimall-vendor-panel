@@ -1,15 +1,16 @@
 // Import Dependencies
 import { Dispatch, ElementType, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link ,useNavigate} from "react-router";
 
 // Local Imports
+import { useAuthContext } from "@/app/contexts/auth/context";
 import { ScrollShadow } from "@/components/ui";
 import { useSidebarContext } from "@/app/contexts/sidebar/context";
 import { Item } from "./item";
 import { NavigationTree } from "@/@types/navigation";
 import { SegmentPath } from "../..";
-
+import { GHOST_ENTRY_PATH } from "@/constants/app";
 // ----------------------------------------------------------------------
 
 export interface MenuProps {
@@ -24,7 +25,13 @@ export function Menu({
   activeSegmentPath,
 }: MenuProps) {
   const { t } = useTranslation();
+  const { logout } = useAuthContext();
   const { isExpanded, open } = useSidebarContext();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await logout();
+    navigate(GHOST_ENTRY_PATH);
+  };
 
   const handleSegmentSelect = (path: string) => {
     setActiveSegmentPath?.(path);
@@ -33,7 +40,17 @@ export function Menu({
     }
   };
 
-  const getProps = ({ path, type, title, transKey }: NavigationTree) => {
+  const getProps = ({ id, path, type, title, transKey }: NavigationTree) => {
+    if (id === "logout") {
+      return {
+        component: "button" as ElementType,
+        onClick: handleLogout,
+        isActive: false,
+        title: t(transKey as string) || (title as string),
+        path,
+      };
+    }
+
     const isLink = type === "item";
 
     return {
@@ -53,7 +70,7 @@ export function Menu({
     >
       {nav.map(({ id, icon, path, type, title, transKey }) => (
         <Item
-          key={path}
+          key={id}
           {...getProps({ id, icon, path, type, title, transKey })}
           id={id}
           icon={icon}

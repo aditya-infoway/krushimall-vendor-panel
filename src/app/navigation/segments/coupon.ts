@@ -5,6 +5,7 @@ export const coupan: NavigationTree = {
   type: "root",
   title: "coupan",
   icon: "item",
+     path: "/coupan",
   childs: [
    
     {

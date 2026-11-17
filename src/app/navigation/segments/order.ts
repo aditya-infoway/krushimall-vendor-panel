@@ -5,6 +5,7 @@ export const order: NavigationTree = {
   type: "root",
   title: "order",
   icon: "follow",
+     path: "/order",
   childs: [
    
     {

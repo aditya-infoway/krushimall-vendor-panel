@@ -38,12 +38,15 @@ export function MainPanel({
         )}
       >
         {/* Application Logo */}
-        <div className="flex pt-3.5">
+       <div className="flex pt-3.5">
           <Link to="/">
-            <Logo className="text-primary-600 dark:text-primary-400 size-10" />
+            <img
+              src={`${import.meta.env.BASE_URL}fevicon.png`}
+              alt="KrushiMall"
+              className="size-8 rounded-lg object-contain"
+            />
           </Link>
         </div>
-
         <Menu
           nav={nav}
           activeSegmentPath={activeSegmentPath}
